@@ -1,235 +1,367 @@
 # REST version of Spring PetClinic Sample Application (spring-framework-petclinic extend ) 
 
-[![Java Build Status](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/maven-build.yml)
-[![Docker Build Status](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/docker-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/docker-build.yml)
+This is a fork of the Spring PetClinic Sample Application.  It's been modified to illustrate several concepts with Splunk Observability Cloud. 
 
-This backend version of the Spring Petclinic application only provides a REST API. **There is no UI**.
-The [spring-petclinic-angular project](https://github.com/spring-petclinic/spring-petclinic-angular) is a Angular front-end application which consumes the REST API.
+Specifically, it shows how the Splunk OpenTelemetry Java agent can be used to gather traces, metrics, and logs from the application and send them to an instance of the Splunk distribution of the OpenTelemetry collector running on a different host. 
 
-## Understanding the Spring Petclinic application with a few diagrams
+It uses http/protobuf, rather than the default grpc protocol, to send metrics, logs, and traces to the collector. 
 
-[See the presentation of the Spring Petclinic Framework version](http://fr.slideshare.net/AntoineRey/spring-framework-petclinic-sample-application)
+The Log4j2 log appender is used to send logs to the OpenTelemetry SDK. 
 
-### Petclinic ER Model
+To build the application: 
 
-![alt petclinic-ermodel](petclinic-ermodel.png)
-
-## Running petclinic locally
-
-### With maven command line
-```
-git clone https://github.com/spring-petclinic/spring-petclinic-rest.git
+````
+git clone https://github.com/dmitchsplunk/spring-petclinic-rest.git
 cd spring-petclinic-rest
-./mvnw spring-boot:run
-```
-
-### With Docker
-```
-docker run -p 9966:9966 springcommunity/spring-petclinic-rest
-```
-
-You can then access petclinic here: [http://localhost:9966/petclinic/](http://localhost:9966/petclinic/)
-
-There are actuator health check and info routes as well: 
-* [http://localhost:9966/petclinic/actuator/health](http://localhost:9966/petclinic/actuator/health)
-* [http://localhost:9966/petclinic/actuator/info](http://localhost:9966/petclinic/actuator/info)
-
-## OpenAPI REST API documentation presented here (after application start):
-
-You can reach the swagger UI with this URL
-[http://localhost:9966/petclinic/](http://localhost:9966/petclinic/swagger-ui.html).
-
-You then can get the Open API description reaching this URL [localhost:9966/petclinic/v3/api-docs](localhost:9966/petclinic/v3/api-docs).
-
-## Screenshot of the Angular client
-
-<img width="1427" alt="spring-petclinic-angular2" src="https://cloud.githubusercontent.com/assets/838318/23263243/f4509c4a-f9dd-11e6-951b-69d0ef72d8bd.png">
-
-## In case you find a bug/suggested improvement for Spring Petclinic
-Our issue tracker is available here: https://github.com/spring-petclinic/spring-petclinic-rest/issues
-
-
-## Database configuration
-
-In its default configuration, Petclinic uses an in-memory database (HSQLDB) which
-gets populated at startup with data.
-A similar setups is provided for MySql and PostgreSQL in case a persistent database configuration is needed.
-To run petclinic locally using persistent database, it is needed to change profile defined in application.properties file.
-
-For MySQL database, it is needed to change param "hsqldb" to "mysql" in string
-```
-spring.profiles.active=hsqldb,spring-data-jpa
-```
- defined in application.properties file.
-
-Before do this, would be good to check properties defined in application-mysql.properties file.
-
-```
-spring.datasource.url = jdbc:mysql://localhost:3306/petclinic?useUnicode=true
-spring.datasource.username=pc
-spring.datasource.password=petclinic 
-spring.datasource.driver-class-name=com.mysql.jdbc.Driver 
-spring.jpa.database=MYSQL
-spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
-spring.jpa.hibernate.ddl-auto=none
-```      
-
-You may also start a MySql database with docker:
-
-```
-docker run --name mysql-petclinic -e MYSQL_ROOT_PASSWORD=petclinic -e MYSQL_DATABASE=petclinic -p 3306:3306 mysql:5.7.8
-```
-
-For PostgeSQL database, it is needed to change param "hsqldb" to "postgresql" in string
-```
-spring.profiles.active=hsqldb,spring-data-jpa
-```
- defined in application.properties file.
-
-Before do this, would be good to check properties defined in application-postgresql.properties file.
-
-```
-spring.datasource.url=jdbc:postgresql://localhost:5432/petclinic
-spring.datasource.username=postgres
-spring.datasource.password=petclinic
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.database=POSTGRESQL
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.ddl-auto=none
-```
-You may also start a Postgres database with docker:
-
-```
-docker run --name postgres-petclinic -e POSTGRES_PASSWORD=petclinic -e POSTGRES_DB=petclinic -p 5432:5432 -d postgres:9.6.0
-```
-## API First Approach
-
-This API is built following some [API First approach principles](https://swagger.io/resources/articles/adopting-an-api-first-approach/).
-
-It is specified through the [OpenAPI](https://oai.github.io/Documentation/).
-It is specified in this [file](./src/main/resources/openapi.yml).
-
-Some of the required classes are generated during the build time. 
-Here are the generated file types:
-* DTOs
-* API template interfaces specifying methods to override in the controllers
-
-To see how to get them generated you can read the next chapter. 
-
-## Generated code
-
-Some of the required classes are generated during the build time using maven or any IDE (e.g., IntelliJ Idea or Eclipse).
-
-All of these classes are generated into the ``target/generated-sources`` folder.
-
-Here is a list of the generated packages and the corresponding tooling:
-
-| Package name                                   | Tool             |
-|------------------------------------------------|------------------|
-| org.springframework.samples.petclinic.mapper   | [MapStruct](https://mapstruct.org/)        |
-| org.springframework.samples.petclinic.rest.dto | [OpenAPI Generator maven plugin](https://github.com/OpenAPITools/openapi-generator/) |
-
-
-To get both, you have to run the following command:
-
-```jshelllanguage
 mvn clean install
-```
+````
 
-## Security configuration
-In its default configuration, Petclinic doesn't have authentication and authorization enabled.
+The following changes were made to instrument the application with OpenTelemetry. 
 
-### Basic Authentication
-In order to use the basic authentication functionality, turn in on from the application.properties file
-```
-petclinic.security.enable=true
-```
-This will secure all APIs and in order to access them, basic authentication is required.
-Apart from authentication, APIs also require authorization. This is done via roles that a user can have.
-The existing roles are listed below with the corresponding permissions 
-* OWNER_ADMIN -> OwnerController, PetController, PetTypeController (getAllPetTypes and getPetType), VisitController
-* VET_ADMIN   -> PetTypeController, SpecialityController, VetController
-* ADMIN       -> UserController
+First, the pom.xml file was modified to include the opentelemetry-bom: 
 
-There is an existing user with the username `admin` and password `admin` that has access to all APIs.
- In order to add a new user, please use the following API:
-```
-POST /api/users
-{
-    "username": "secondAdmin",
-    "password": "password",
-    "enabled": true,
-    "roles": [
-    	{ "name" : "OWNER_ADMIN" }
-	]
+````
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>1.32.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+````
+
+The following opentelemetry dependencies were also added to pom.xml: 
+
+````
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.21.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-log4j-appender-2.17</artifactId>
+            <version>1.32.0-alpha</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+            <version>1.32.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+````
+
+The following changes were also made to the pom.xml file to ensure the application is using Log4j2: 
+
+````
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+         ...
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+````
+
+We also added the src/main/resources/log4j2.xml file with the following Log4j2 configuration: 
+
+````
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" packages="io.opentelemetry.instrumentation.log4j.appender.v2_17">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} trace_id: %X{trace_id} span_id: %X{span_id} trace_flags: %X{trace_flags} - %msg%n"/>
+        </Console>
+        <OpenTelemetry name="OpenTelemetryAppender"/>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="OpenTelemetryAppender" level="All"/>
+            <AppenderRef ref="Console" level="All"/>
+        </Root>
+    </Loggers>
+</Configuration>
+````
+
+Note that it includes the OpenTelemetry log appender, to send the log4j2 logs to the OpenTelemetry SDK. 
+
+Then we modified the log appender to the main Java class (src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java):
+
+````
+package org.springframework.samples.petclinic;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
+
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+
+@SpringBootApplication
+public class PetClinicApplication extends SpringBootServletInitializer {
+
+    private static volatile OpenTelemetry openTelemetry = OpenTelemetry.noop();
+
+    public static void main(String[] args) {
+
+        OpenTelemetrySdk openTelemetrySdk =
+            AutoConfiguredOpenTelemetrySdk.builder().build().getOpenTelemetrySdk();
+        PetClinicApplication.openTelemetry = openTelemetrySdk;
+
+        SpringApplication.run(PetClinicApplication.class, args);
+
+        // Setup log4j OpenTelemetryAppender
+        // Normally this is done before the framework (Spring) is initialized. However, spring boot
+        // erases any programmatic log configuration so we must initialize after Spring. 
+        // See this issue for tracking: https://github.com/spring-projects/spring-boot/issues/25847
+        OpenTelemetryAppender.install(openTelemetrySdk);
+	}
+
+    @Bean
+    public OpenTelemetry openTelemetry() {
+        return openTelemetry;
+    }
 }
-```
+````
 
-## Working with Petclinic in Eclipse/STS
+The application assumes that an instance of the Splunk distribution of the OpenTelemetry collector is running with the following configuration: 
 
-### prerequisites
-The following items should be installed in your system:
-* Maven 3 (https://maven.apache.org/install.html)
-* git command line tool (https://help.github.com/articles/set-up-git)
-* Eclipse with the m2e plugin (m2e is installed by default when using the STS (http://www.springsource.org/sts) distribution of Eclipse)
+````
+extensions:
+  health_check:
+    endpoint: "${SPLUNK_LISTEN_INTERFACE}:13133"
+  http_forwarder:
+    ingress:
+      endpoint: "${SPLUNK_LISTEN_INTERFACE}:6060"
+    egress:
+      endpoint: "${SPLUNK_API_URL}"
+      # Use instead when sending to gateway
+      #endpoint: "${SPLUNK_GATEWAY_URL}"
+  smartagent:
+    bundleDir: "${SPLUNK_BUNDLE_DIR}"
+    collectd:
+      configDir: "${SPLUNK_COLLECTD_DIR}"
+  zpages:
+    #endpoint: "${SPLUNK_LISTEN_INTERFACE}:55679"
+  memory_ballast:
+    # In general, the ballast should be set to 1/3 of the collector's memory, the limit
+    # should be 90% of the collector's memory.
+    # The simplest way to specify the ballast size is set the value of SPLUNK_BALLAST_SIZE_MIB env variable.
+    size_mib: ${SPLUNK_BALLAST_SIZE_MIB}
 
-Note: when m2e is available, there is an m2 icon in Help -> About dialog.
-If m2e is not there, just follow the install process here: http://eclipse.org/m2e/download/
-* Eclipse with the [mapstruct plugin](https://mapstruct.org/documentation/ide-support/) installed.
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      memory:
+      network:
+      # System load average metrics https://en.wikipedia.org/wiki/Load_(computing)
+      load:
+      # Paging/Swap space utilization and I/O metrics
+      paging:
+      # Aggregated system process count metrics
+      processes:
+      # System processes metrics, disabled by default
+      # process:
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:14250"
+      thrift_binary:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:6832"
+      thrift_compact:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:6831"
+      thrift_http:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:14268"
+  otlp:
+    protocols:
+#      grpc:
+#        endpoint: "${SPLUNK_LISTEN_INTERFACE}:4317"
+      http:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:4318"
+  # This section is used to collect the OpenTelemetry Collector metrics
+  # Even if just a Splunk APM customer, these metrics are included
+  prometheus/internal:
+    config:
+      scrape_configs:
+      - job_name: 'otel-collector'
+        scrape_interval: 10s
+        static_configs:
+        - targets: ["${SPLUNK_LISTEN_INTERFACE}:8888"]
+        metric_relabel_configs:
+          - source_labels: [ __name__ ]
+            regex: '.*grpc_io.*'
+            action: drop
+  smartagent/signalfx-forwarder:
+    type: signalfx-forwarder
+    listenAddress: "${SPLUNK_LISTEN_INTERFACE}:9080"
+  smartagent/processlist:
+    type: processlist
+  signalfx:
+    endpoint: "${SPLUNK_LISTEN_INTERFACE}:9943"
+    # Whether to preserve incoming access token and use instead of exporter token
+    # default = false
+    #access_token_passthrough: true
+  zipkin:
+    endpoint: "${SPLUNK_LISTEN_INTERFACE}:9411"
 
-### Steps:
+processors:
+  batch:
+  # Enabling the memory_limiter is strongly recommended for every pipeline.
+  # Configuration is based on the amount of memory allocated to the collector.
+  # For more information about memory limiter, see
+  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiter/README.md
+  memory_limiter:
+    check_interval: 2s
+    limit_mib: ${SPLUNK_MEMORY_LIMIT_MIB}
 
-1) In the command line
-```
-git clone https://github.com/spring-petclinic/spring-petclinic-rest.git
-```
-2) Inside Eclipse
-```
-File -> Import -> Maven -> Existing Maven project
-```
+  # Detect if the collector is running on a cloud system, which is important for creating unique cloud provider dimensions.
+  # Detector order is important: the `system` detector goes last so it can't preclude cloud detectors from setting host/os info.
+  # Resource detection processor is configured to override all host and cloud attributes because instrumentation
+  # libraries can send wrong values from container environments.
+  # https://docs.splunk.com/Observability/gdi/opentelemetry/components/resourcedetection-processor.html#ordering-considerations
+  resourcedetection:
+    detectors: [gcp, ecs, ec2, azure, system]
+    override: true
 
+  # Optional: The following processor can be used to add a default "deployment.environment" attribute to the logs and 
+  # traces when it's not populated by instrumentation libraries.
+  # If enabled, make sure to enable this processor in a pipeline.
+  # For more information, see https://docs.splunk.com/Observability/gdi/opentelemetry/components/resource-processor.html
+  #resource/add_environment:
+    #attributes:
+      #- action: insert
+        #value: staging/production/...
+        #key: deployment.environment
 
-## Looking for something in particular?
+exporters:
+  # Traces
+  sapm:
+    access_token: "${SPLUNK_ACCESS_TOKEN}"
+    endpoint: "${SPLUNK_TRACE_URL}"
+  # Metrics + Events
+  signalfx:
+    access_token: "${SPLUNK_ACCESS_TOKEN}"
+    api_url: "${SPLUNK_API_URL}"
+    ingest_url: "${SPLUNK_INGEST_URL}"
+    # Use instead when sending to gateway
+    #api_url: http://${SPLUNK_GATEWAY_URL}:6060
+    #ingest_url: http://${SPLUNK_GATEWAY_URL}:9943
+    sync_host_metadata: true
+    correlation:
+  # Logs
+  splunk_hec:
+    token: "${SPLUNK_HEC_TOKEN}"
+    endpoint: "${SPLUNK_HEC_URL}"
+    source: "otel"
+    sourcetype: "otel"
+    profiling_data_enabled: false
+  # Profiling
+  splunk_hec/profiling:
+    token: "${SPLUNK_ACCESS_TOKEN}"
+    endpoint: "${SPLUNK_INGEST_URL}/v1/log"
+    log_data_enabled: false
+  # Send to gateway
+  otlp:
+    endpoint: "${SPLUNK_GATEWAY_URL}:4317"
+    tls:
+      insecure: true
+  logging:
+      verbosity: detailed  
 
-| Layer | Source |
-|--|--|
-| REST API controllers | [REST folder](src/main/java/org/springframework/samples/petclinic/rest) |
-| Service | [ClinicServiceImpl.java](src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java) |
-| JDBC | [jdbc folder](src/main/java/org/springframework/samples/petclinic/repository/jdbc) |
-| JPA | [jpa folder](src/main/java/org/springframework/samples/petclinic/repository/jpa) |
-| Spring Data JPA | [springdatajpa folder](src/main/java/org/springframework/samples/petclinic/repository/springdatajpa) |
-| Tests | [AbstractClinicServiceTests.java](src/test/java/org/springframework/samples/petclinic/service/clinicService/AbstractClinicServiceTests.java) |
+service:
+  telemetry:
+    metrics:
+      address: "${SPLUNK_LISTEN_INTERFACE}:8888"
+  extensions: [health_check, http_forwarder, zpages, memory_ballast, smartagent]
+  pipelines:
+    traces:
+      receivers: [jaeger, otlp, smartagent/signalfx-forwarder, zipkin]
+      processors:
+      - memory_limiter
+      - batch
+      - resourcedetection
+      exporters: [sapm, signalfx, logging]
+    metrics:
+      #receivers: [hostmetrics, otlp, signalfx, smartagent/signalfx-forwarder]
+      #processors: [memory_limiter, batch, resourcedetection]
+      receivers: [otlp, signalfx, smartagent/signalfx-forwarder]
+      processors: [memory_limiter, batch]
+      exporters: [signalfx, logging]
+    metrics/internal:
+      receivers: [prometheus/internal]
+      processors: [memory_limiter, batch, resourcedetection]
+      # When sending to gateway, at least one metrics pipeline needs
+      # to use signalfx exporter so host metadata gets emitted
+      exporters: [signalfx]
+    logs/signalfx:
+      receivers: [signalfx, smartagent/processlist]
+      processors: [memory_limiter, batch, resourcedetection]
+      exporters: [signalfx]
+    logs:
+      receivers: [otlp]
+      processors:
+      - memory_limiter
+      - batch
+      - resourcedetection
+      #exporters: [splunk_hec, splunk_hec/profiling]
+      exporters: [logging]
 
+````
 
-## Publishing a Docker image
+The application can be launched as follows:
 
-This application uses [Google Jib]([https://github.com/GoogleContainerTools/jib) to build an optimized Docker image
-into the [Docker Hub](https://cloud.docker.com/u/springcommunity/repository/docker/springcommunity/spring-petclinic-rest/)
-repository.
-The [pom.xml](pom.xml) has been configured to publish the image with a the `springcommunity/spring-petclinic-rest`image name.
+````
+java -javaagent:./splunk-otel-javaagent.jar \
+    -Dotel.javaagent.debug=false \
+    -Dotel.resource.attributes="service.name=spring-petclinic-rest,environment=test" \
+    -Dsplunk.profiler.enabled=true \
+    -Dsplunk.profiler.memory.enabled=true \
+    -Dotel.exporter.otlp.endpoint=http://<collector host>:4318 \
+    -Dotel.exporter.otlp.protocol=http/protobuf \
+    -Dsplunk.metrics.enabled=true \
+    -Dsplunk.metrics.endpoint=http://<collector host>>:9943 \
+    -jar target/spring-petclinic-rest-3.0.2.jar 2>&1 | tee out.txt
+````
 
-Command line to run:
-```
-mvn compile jib:build -X -DjibSerialize=true -Djib.to.auth.username=xxx -Djib.to.auth.password=xxxxx
-```
+Replace <collector host> with the hostname where the OpenTelemetry collector is running.
 
-## Interesting Spring Petclinic forks
+To access the application UI and exercise functionality, use a browser and navigate to the following URL (replace localhost with the appropriate host name if the application is not running on localhost):
 
-The Spring Petclinic master branch in the main [spring-projects](https://github.com/spring-projects/spring-petclinic)
-GitHub org is the "canonical" implementation, currently based on Spring Boot and Thymeleaf.
-
-This [spring-petclinic-rest](https://github.com/spring-petclinic/spring-petclinic-rest/) project is one of the [several forks](https://spring-petclinic.github.io/docs/forks.html) 
-hosted in a special GitHub org: [spring-petclinic](https://github.com/spring-petclinic).
-If you have a special interest in a different technology stack
-that could be used to implement the Pet Clinic then please join the community there.
-
-
-# Contributing
-
-The [issue tracker](https://github.com/spring-petclinic/spring-petclinic-rest/issues) is the preferred channel for bug reports, features requests and submitting pull requests.
-
-For pull requests, editor preferences are available in the [editor config](https://github.com/spring-petclinic/spring-petclinic-rest/blob/master/.editorconfig) for easy use in common text editors. Read more and download plugins at <http://editorconfig.org>.
-
-
-
-
+http://localhost:9966/petclinic/swagger-ui/index.html#/pettypes/listPetTypes
