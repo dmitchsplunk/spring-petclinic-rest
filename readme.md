@@ -157,7 +157,16 @@ public class PetClinicApplication extends SpringBootServletInitializer {
 }
 ````
 
-The application assumes that an instance of the Splunk distribution of the OpenTelemetry collector is running with the following configuration: 
+The application assumes that an instance of the Splunk distribution of the OpenTelemetry collector is running on a separate host. 
+
+Use the following commands to install the collector on a Linux host: 
+
+````
+curl -sSL https://dl.signalfx.com/splunk-otel-collector.sh > /tmp/splunk-otel-collector.sh && \
+sudo sh /tmp/splunk-otel-collector.sh --realm <realm> -- <access token> --mode agent --without-fluentd --without-instrumentation
+````
+
+The modify the configuration file found at /etc/otel/collector/agent_config.yaml with the following config: 
 
 ````
 extensions:
@@ -342,7 +351,18 @@ service:
       - resourcedetection
       #exporters: [splunk_hec, splunk_hec/profiling]
       exporters: [logging]
+````
 
+Restart the collector for the configuration changes to take effect: 
+
+````
+sudo systemctl restart splunk-otel-collector
+````
+
+Use the following command to view the collector logs (if needed):
+
+````
+journalctl -u splunk-otel-collector
 ````
 
 The application can be launched as follows:
