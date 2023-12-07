@@ -353,6 +353,21 @@ service:
       exporters: [logging]
 ````
 
+Ensure that the collector is able to accept remote connections by adding the following line to /etc/otel/collector/splunk-otel-collector.conf: 
+
+````
+SPLUNK_LISTEN_INTERFACE=0.0.0.0
+````
+
+(note: there's probably a more secure way to do this)
+
+If you want to send logs to a Splunk Cloud or Splunk Enterprise instance, update the /etc/otel/collector/splunk-otel-collector.conf file to include your HEC token and URL: 
+
+````
+SPLUNK_HEC_URL=https://<instance name>.splunkcloud.com:8088/services/collector
+SPLUNK_HEC_TOKEN=<HEC token>
+````
+
 Restart the collector for the configuration changes to take effect: 
 
 ````
@@ -376,12 +391,28 @@ java -javaagent:./splunk-otel-javaagent.jar \
     -Dotel.exporter.otlp.endpoint=http://<collector host>:4318 \
     -Dotel.exporter.otlp.protocol=http/protobuf \
     -Dsplunk.metrics.enabled=true \
-    -Dsplunk.metrics.endpoint=http://<collector host>>:9943 \
+    -Dsplunk.metrics.endpoint=http://<collector host>:9943 \
     -jar target/spring-petclinic-rest-3.0.2.jar 2>&1 | tee out.txt
 ````
 
 Replace <collector host> with the hostname where the OpenTelemetry collector is running.
 
+Note that CPU and memory profiling have not been enabled for this example, as they're only supported with grpc, and this example uses the http/protobuf protocol instead. 
+
 To access the application UI and exercise functionality, use a browser and navigate to the following URL (replace localhost with the appropriate host name if the application is not running on localhost):
 
 http://localhost:9966/petclinic/swagger-ui/index.html#/pettypes/listPetTypes
+
+We can see that traces are sent successfully to the remote collector and then onwards to Splunk Observability Cloud: 
+
+![Service Map](examples/service%20map.png)
+
+![Traces](examples/traces.png)
+
+We can also see that the JVM runtime metrics were sent successfully from the Java agent to the collector then to Splunk Observability Cloud: 
+
+![Metrics](examples/metrics.png)
+
+And logs are being sent successfully from the Log4J log appender to the OpenTelemetry SDK, then to the collector, and finally to Splunk Cloud: 
+
+![Logs](examples/logs.png)
