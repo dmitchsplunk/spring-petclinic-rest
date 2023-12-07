@@ -386,8 +386,8 @@ The application can be launched as follows:
 java -javaagent:./splunk-otel-javaagent.jar \
     -Dotel.javaagent.debug=false \
     -Dotel.resource.attributes="service.name=spring-petclinic-rest,environment=test" \
-    -Dsplunk.profiler.enabled=true \
-    -Dsplunk.profiler.memory.enabled=true \
+    -Dsplunk.profiler.enabled=false \
+    -Dsplunk.profiler.memory.enabled=false \
     -Dotel.exporter.otlp.endpoint=http://<collector host>:4318 \
     -Dotel.exporter.otlp.protocol=http/protobuf \
     -Dsplunk.metrics.enabled=true \
