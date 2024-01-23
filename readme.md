@@ -220,8 +220,8 @@ receivers:
         endpoint: "${SPLUNK_LISTEN_INTERFACE}:14268"
   otlp:
     protocols:
-#      grpc:
-#        endpoint: "${SPLUNK_LISTEN_INTERFACE}:4317"
+      grpc:
+        endpoint: "${SPLUNK_LISTEN_INTERFACE}:4317"
       http:
         endpoint: "${SPLUNK_LISTEN_INTERFACE}:4318"
   # This section is used to collect the OpenTelemetry Collector metrics
@@ -350,7 +350,7 @@ service:
       - batch
       - resourcedetection
       #exporters: [splunk_hec, splunk_hec/profiling]
-      exporters: [logging]
+      exporters: [logging, splunk_hec/profiling]
 ````
 
 Ensure that the collector is able to accept remote connections by adding the following line to /etc/otel/collector/splunk-otel-collector.conf: 
